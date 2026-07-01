@@ -1,0 +1,39 @@
+const config = {
+  botName: '𝙎𝙖𝙞𝙩𝙖𝙢𝙖𝘽𝙤𝙩-𝙎𝙏',
+  ownerName: '𝑺𝒂𝒊𝒅𝒆𝒗𝟏𝟒𝟓',
+  version: '8.0.0',
+  prefix: /^[.#/!]/,
+  ownerNumber: ['51991579415'], // Cambia por tu número 
+  phoneNumber: '51991579415', //Si estas en un entorno de desarrollo web, define el número que sera el bot aquí
+  MODE: 'public',
+  usePairingCode: true,
+  antiSpam: {
+    enabled: true,
+    maxCmds: 5,
+    ventanaMs: 8000,
+    muteMs: 15000,
+  },
+  antiSpamSubBot: {
+    enabled: true,
+    maxCmds: 5,
+    ventanaMs: 10000,
+    muteMs: 20000,
+  },
+  newsletterJid: '120363408885875268@newsletter',
+  groupLink: 'https://whatsapp.com/channel/0029VbCqH9V1Hspq4A7tm726',
+  CURRENCY_NAME: '𝙎𝙖𝙞𝘾𝙤𝙞𝙣𝙨',
+  CURRENCY_SYMBOL: '✵',
+  PREMIUM_NAME: '𝙂𝙀𝙉𝙊𝙎',
+  PREMIUM_SYMBOL: '亗👊亗',
+  kogenPrice: 1000,
+  packname: 'SAITAMA-BOT',
+  author: 'SAIDEV145',
+  limiteSubbots: '50', // Cambia la cantidad según cuánto soporte tu servidor 
+  footer: '𝙎𝙖𝙞tama-Boᴛ · 𝙎𝙖𝙞Dev¹⁴⁵',
+  
+  ACR_HOST: 'identify-us-west-2.acrcloud.com',
+ACR_ACCESS_KEY: '2bf581174cca8a830386ec07700cc692',
+ACR_ACCESS_SECRET: 'RI408rkpVpYYjqD7uDVtZPetnhRPy1j1j2d1vsWJ',
+}
+
+export default config
