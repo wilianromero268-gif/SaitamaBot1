@@ -11,6 +11,7 @@ import { connectDB } from './lib/database/db.js'
 import { handler, loadPlugins, setupWatchers, plugins } from './handler.js'
 import { groupCache, msgRetryCache } from './lib/caches.js'
 import { autoStartSubBots } from './lib/jadibot.js'
+import GroupDb from './lib/database/models/zen-groups.js'
 
 const pkg = baileysMod.default && Object.keys(baileysMod).length === 1 ? baileysMod.default : baileysMod
 const { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, Browsers } = pkg
@@ -49,6 +50,16 @@ async function startBot() {
   const { version } = await fetchLatestBaileysVersion()
   const logger = pino({ level: 'silent' })
 
+  if (!state.creds.registered) {
+    const sessionFiles = fs.readdirSync(SESSION_PATH).filter(f => f !== 'creds.json')
+    if (sessionFiles.length > 0) {
+      console.log(chalk.bold.yellowBright('⚠️  Sesión previa incompleta detectada. Limpiando caché...'))
+      for (const f of sessionFiles) {
+        try { fs.unlinkSync(`${SESSION_PATH}/${f}`) } catch {}
+      }
+    }
+  }
+
   const conn = makeWASocket({
     version,
     logger,
@@ -73,7 +84,14 @@ async function startBot() {
   })
 
   if (config.usePairingCode && !conn.authState.creds.registered) {
-  const numero = '51991579415' // Tu número sin el +
+    let numero = config.phoneNumber?.replace(/\D/g, '')
+
+    if (!numero) {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+      numero = await new Promise(res =>
+        rl.question(chalk.bold.yellowBright('\nINGRESA TU NÚMERO DE TELÉFONO (sin +): '), ans => { rl.close(); res(ans.replace(/\D/g, '')) })
+      )
+    }
 
     setTimeout(async () => {
       try {
@@ -95,10 +113,13 @@ async function startBot() {
       if (code === DisconnectReason.loggedOut || code === 401) {
         conn.ev.removeAllListeners()
         try { conn.ws.close() } catch {}
+        console.log(chalk.bold.yellowBright('⚠️  Sesión inválida. Limpiando y reiniciando...'))
         setTimeout(() => {
           fs.rmSync(SESSION_PATH, { recursive: true, force: true })
-          process.exit(1)
-        }, 1000)
+          fs.mkdirSync(SESSION_PATH, { recursive: true })
+          retryCount = 0
+          startBot()
+        }, 2000)
         return
       }
       if (code === 405 || code === 429 || retryCount >= 10) {
@@ -168,6 +189,75 @@ async function startBot() {
       console.error(chalk.bold.bgRed.white(' [GROUP-UPDATE ERROR] '), chalk.bold.redBright(e.stack || e.message))
     }
   })
+  conn.ev.on('call', async ([call]) => {
+  console.log('[CALL]', call)
+
+  // resto del código...
+})
+  
+  conn.ev.on('call', async ([call]) => {
+  try {
+    if (!call) return
+    if (call.status !== 'offer') return
+
+    // Rechazar llamada
+    await conn.rejectCall(call.id, call.from).catch(() => {})
+
+    // Solo llamadas grupales
+    if (!call.isGroup) return
+
+    const groupId = call.groupJid
+    const user = `${call.callerPn}@s.whatsapp.net`
+
+    const groupDb = await GroupDb.findOne({ jid: groupId })
+    if (!groupDb?.antiCall) return
+
+    const metadata = await conn.groupMetadata(groupId)
+
+    const bot = metadata.participants.find(
+      p => p.id === conn.user.id
+    )
+
+    if (!bot?.admin) return
+
+    const participant = metadata.participants.find(
+      p => p.id === user
+    )
+
+    if (!participant) return
+
+    // No expulsar admins
+    if (participant.admin) return
+
+    // No expulsar owner
+    if (user === config.ownerNumber + '@s.whatsapp.net') return
+
+    await conn.groupParticipantsUpdate(
+      groupId,
+      [user],
+      'remove'
+    )
+
+    await conn.sendMessage(groupId, {
+      text:
+`╭━━━〔 📞 ANTILLAMADAS 〕━━━⬣
+
+🚫 @${call.callerPn} fue expulsado automáticamente.
+
+Motivo:
+Intentó realizar una llamada al grupo.
+
+╰━━━━━━━━━━━━━━━━━━⬣`,
+      mentions: [user]
+    })
+
+    console.log('[ANTICALL]', user)
+
+  } catch (e) {
+    console.error('[ANTICALL]', e)
+  }
+})
+  
 }
 
 const shutdown = () => process.exit(0)

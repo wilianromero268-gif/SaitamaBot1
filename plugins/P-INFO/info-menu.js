@@ -181,6 +181,8 @@ const handler = async (m, { conn, usedPrefix, isOwner, command, groupDb, userDb 
 ▢ ⚙️ *Prefijo:* [ *${prefix}* ]
 ▢ ⏱️ *Activo:* ${getTime()}
 ▢ 📦 *Comandos:* ${total}
+▢ ✅ *TikTok de mi creador:*  🔗 https://www.tiktok.com/@sai16172?_r=1&_t=ZS-97okvUBLwyT
+> Sigue a mi creador en tiktok para que asi tenga apoyo y siga creando más comandos prohibidos 💯%❤️
 
 > Escribí el comando de la categoría que querés ver.
 *╚══⌦ ${config.footer} ⌫══╝*
@@ -201,6 +203,8 @@ ${cats}`
 ▢ ⚙️ *Prefijo:* [ *${prefix}* ]
 ▢ ⏱️ *Activo:* ${getTime()}
 ▢ 📦 *Comandos:* ${total}
+▢ ✅ *TikTok de mi creador:*  🔗 https://www.tiktok.com/@sai16172?_r=1&_t=ZS-97okvUBLwyT
+> Sigue a mi creador en tiktok para que asi tenga apoyo y siga creando más comandos prohibidos 💯%❤️
 
 > Tocá el botón de abajo para ver la lista de comandos.
 *╚══⌦ ${config.footer} ⌫══╝*`

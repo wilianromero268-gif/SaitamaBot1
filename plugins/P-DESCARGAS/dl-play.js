@@ -127,6 +127,8 @@ async function sendYoutubeCard(conn, m, results, index, usedPrefix) {
 > *Publicado:* ${video.publishedAt}
 
 > *Resultado:* ${index + 1}/${results.length}
+> *Sigue ami creador en TikTok*
+> ? https://www.tiktok.com/@sai16172?_r=1&_t=ZS-97okvUBLwyT
 
 > *Elige un formato:*`
 
