@@ -7,6 +7,9 @@
     "start": "node zen.js",
     "dev": "node zen.js"
   },
+  "engines": {
+  "node": "22.x"
+},
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
     "@axel-dev09/zen-dl": "latest",
