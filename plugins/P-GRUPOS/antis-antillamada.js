@@ -66,7 +66,7 @@ Usa:
 
 handler.help = ['antillamadas <on/off>']
 handler.tags = ['group']
-handler.command = ['antillamadas', 'anticall']
+handler.command = ['antillamadas', 'antiCall']
 handler.groupOnly = true
 handler.adminOnly = true
 handler.botAdminOnly = true

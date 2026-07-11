@@ -4,22 +4,22 @@ const handler = async (m, { args, groupDb }) => {
   if (!option) {
     return m.reply(`*⌬┤ 🔞 ├⌬ ANTIPORNO*
 
-> Estado: ${groupDb.antiporno ? '✅ ACTIVADO' : '❌ DESACTIVADO'}
+> Estado: ${groupDb.antiPorno ? '✅ ACTIVADO' : '❌ DESACTIVADO'}
 
 > *Uso:*
-> .antiporno on
-> .antiporno off`)
+> .antiPorno on
+> .antiPorno off`)
   }
 
   if (['on', '1', 'true', 'activar', 'enable'].includes(option)) {
 
-    if (groupDb.antiporno) {
+    if (groupDb.antiPorno) {
       return m.reply(`*⌬┤ ⚠️ ├⌬ YA ESTÁ ACTIVADO*
 
-> El sistema antiporno ya estaba activado.`)
+> El sistema antiPorno ya estaba activado.`)
     }
 
-    groupDb.antiporno = true
+    groupDb.antiPorno = true
     await groupDb.save()
 
     return m.reply(`*⌬┤ ✅ ├⌬ ANTIPORNO ACTIVADO*
@@ -39,13 +39,13 @@ const handler = async (m, { args, groupDb }) => {
 
   } else if (['off', '0', 'false', 'desactivar', 'disable'].includes(option)) {
 
-    if (!groupDb.antiporno) {
+    if (!groupDb.antiPorno) {
       return m.reply(`*⌬┤ ⚠️ ├⌬ YA ESTÁ DESACTIVADO*
 
-> El sistema antiporno ya estaba desactivado.`)
+> El sistema antiPorno ya estaba desactivado.`)
     }
 
-    groupDb.antiporno = false
+    groupDb.antiPorno = false
     await groupDb.save()
 
     return m.reply(`*⌬┤ ❌ ├⌬ ANTIPORNO DESACTIVADO*
@@ -58,14 +58,14 @@ const handler = async (m, { args, groupDb }) => {
 
 > Usa:
 
-> *.antiporno on*
-> *.antiporno off*`)
+> *.antiPorno on*
+> *.antiPorno off*`)
   }
 }
 
-handler.help = ['antiporno <on/off>']
+handler.help = ['antiPorno <on/off>']
 handler.tags = ['group']
-handler.command = ['antiporno']
+handler.command = ['antiPorno']
 handler.groupOnly = true
 handler.adminOnly = true
 handler.botAdminOnly = true
