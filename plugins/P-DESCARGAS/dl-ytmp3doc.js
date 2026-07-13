@@ -92,6 +92,8 @@ const media = await fetchMp3(ytUrl)
       fs.createWriteStream(filePath)
     )
 
+  await writeAudioTags(filePath, media)
+
     const isDoc = ['ytmp3doc', 'ytadoc'].includes(command)
 
     if (isDoc) {
