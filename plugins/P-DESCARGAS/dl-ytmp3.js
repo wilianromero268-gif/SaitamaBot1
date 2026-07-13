@@ -5,6 +5,7 @@ import { rm } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import config from '../../config.js'
 import { playaudio } from '../../lib/scrapers/playaudio.js'
+import { writeAudioTags } from '../../lib/audioTags.js'
 
 const DELIRIUS = 'https://api.delirius.store/download'
 
@@ -98,6 +99,8 @@ const media = await fetchMp3(ytUrl)
       res.data,
       fs.createWriteStream(filePath)
     )
+
+    await writeAudioTags(filePath, media)
 
     if (!fs.existsSync(filePath) || fs.statSync(filePath).size < 1000) {
       throw new Error('Archivo inválido')
