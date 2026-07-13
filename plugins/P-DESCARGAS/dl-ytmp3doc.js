@@ -4,6 +4,7 @@ import path from 'path'
 import { rm } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import { playaudio } from '../../lib/scrapers/playaudio.js'
+import { writeAudioTags } from '../../lib/audioTags.js'
 
 const DELIRIUS = 'https://api.delirius.store/download'
 
