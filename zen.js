@@ -12,6 +12,7 @@ import { handler, loadPlugins, setupWatchers, plugins } from './handler.js'
 import { groupCache, msgRetryCache } from './lib/caches.js'
 import { autoStartSubBots } from './lib/jadibot.js'
 import GroupDb from './lib/database/models/zen-groups.js'
+import { translateText } from './lib/lang.js'
 
 const pkg = baileysMod.default && Object.keys(baileysMod).length === 1 ? baileysMod.default : baileysMod
 const { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, Browsers } = pkg
@@ -82,6 +83,32 @@ async function startBot() {
       return msg || undefined
     }
   })
+const _sendMessage = conn.sendMessage.bind(conn)
+
+conn.sendMessage = async (jid, content = {}, options = {}) => {
+  try {
+    if (content?.text) {
+      content.text = await translateText(conn, content.text)
+    }
+
+    if (content?.caption) {
+      content.caption = await translateText(conn, content.caption)
+    }
+
+    if (content?.footer) {
+      content.footer = await translateText(conn, content.footer)
+    }
+
+    if (content?.title) {
+      content.title = await translateText(conn, content.title)
+    }
+  } catch (e) {
+    console.error('[LANG]', e)
+  }
+
+  return _sendMessage(jid, content, options)
+  }
+  
 
   if (config.usePairingCode && !conn.authState.creds.registered) {
     let numero = config.phoneNumber?.replace(/\D/g, '')
