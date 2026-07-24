@@ -128,13 +128,17 @@ text:
 
 const data = await ytmp4(result.url)
 
+console.log(data)
+
 const downloadUrl =
 typeof data === 'string'
 ? data
 : data?.url ||
   data?.downloadUrl ||
   data?.result ||
-  data?.dl
+  data?.dl ||
+  data?.video ||
+  data?.data?.url
 
 if (!downloadUrl) {
     throw new Error('No se obtuvo el enlace de descarga')
@@ -264,11 +268,12 @@ edit:msg.key
 
 
 
-
+console.log(fs.existsSync(filePath))
+console.log(fs.statSync(filePath).size)
 await conn.sendMessage(
 m.chat,
 {
-document: fs.createReadStream(filePath)
+document: fs.createReadStream(filePath),
         
 mimetype:
 'video/mp4',
