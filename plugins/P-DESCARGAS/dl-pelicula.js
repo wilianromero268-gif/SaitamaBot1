@@ -123,8 +123,6 @@ const down = await axios.get(
 
 const media = down.data?.data
 
-    console.log(media)
-
 
 
 if(!media?.download){
@@ -174,49 +172,48 @@ timeout:120000
 
 
 
-const total =
-Number(
-res.headers['content-length'] || 0
+const total = Number(
+    res.headers['content-length'] ||
+    res.headers['Content-Length'] ||
+    0
 )
-
-
 
 let current = 0
-let last = -1
+let lastPercent = -1
+let lastUpdate = 0
 
 
+res.data.on('data', chunk => {
 
-res.data.on(
-'data',
-async chunk=>{
+    current += chunk.length
 
-
-current += chunk.length
+})
 
 
+const progress = setInterval(async () => {
 
-if(!total)return
-
-
-
-const percent =
-Math.floor(
-(current / total)*100
-)
+    if (!total) return
 
 
-
-if(percent !== last && percent % 5 === 0){
-
-
-last = percent
+    const percent = Math.floor(
+        (current / total) * 100
+    )
 
 
+    if (percent === lastPercent) return
 
-await conn.sendMessage(
-m.chat,
-{
-text:
+
+    if (Date.now() - lastUpdate < 3000) return
+
+
+    lastPercent = percent
+    lastUpdate = Date.now()
+
+
+    await conn.sendMessage(
+    m.chat,
+    {
+    text:
 `╭━━━〔 *🎬 DESCARGANDO PELÍCULA* 〕━━━⬣
 ┃ *🎬 Nombre:*
 ┃ ${result.title}
@@ -227,25 +224,22 @@ text:
 ┃ ${createBar(percent)} ${percent}%
 ┃ 💾 ${(current/1024/1024).toFixed(2)} MB / ${(total/1024/1024).toFixed(2)} MB
 ╰━━━━━━━━━━━━━━━━━━⬣`,
-edit:msg.key
-}
-)
+    edit: msg.key
+    }
+    )
 
 
-}
-
-
-})
-
-
+},3000)
 
 
 
 await pipeline(
-res.data,
-fs.createWriteStream(filePath)
+    res.data,
+    fs.createWriteStream(filePath)
 )
 
+
+clearInterval(progress)
 
 
 
