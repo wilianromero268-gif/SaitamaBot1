@@ -4,11 +4,18 @@ import path from 'path'
 import { pipeline } from 'stream/promises'
 import { rm } from 'fs/promises'
 
+
 const SEARCH =
 'https://api.delirius.store/search/ytsearch'
 
 
+const DOWNLOAD =
+'https://api.delirius.store/download/ytmp4'
+
+
+
 function timeToSeconds(time = '') {
+
     const p = time.split(':').map(Number)
 
     if (p.length === 3)
@@ -21,7 +28,8 @@ function timeToSeconds(time = '') {
 }
 
 
-function createBar(percent) {
+
+function createBar(percent){
 
     const total = 10
     const done = Math.floor(percent / 10)
@@ -33,41 +41,56 @@ function createBar(percent) {
 }
 
 
-const handler = async (m, { conn, text }) => {
 
-if (!text)
+const handler = async (m,{conn,text})=>{
+
+
+if(!text){
+
 return m.reply(
-`╭━━━〔 🎬 VIDEO LARGO 〕━━━⬣
+`╭━━━〔 *🎬 PELÍCULA*〕━━━⬣
 ┃ Usa:
 ┃ #pelicula nombre
 ╰━━━━━━━━━━━━━━━━━━⬣`
 )
+
+}
+
 
 
 let msg
 let filePath
 
 
-try {
+
+try{
 
 
-const { data } = await axios.get(
+// BUSCAR
+
+const search = await axios.get(
 `${SEARCH}?q=${encodeURIComponent(text)}`
 )
 
 
 const result =
-data?.data?.find(
-v => timeToSeconds(v.duration) >= 1800
+search.data?.data?.find(
+v => timeToSeconds(v.duration) >= 3600
 )
 
 
-if (!result)
+
+if(!result){
+
 return m.reply(
-'❌ No se encontró un video largo'
+'❌ No encontré un video mayor a 1 hora'
 )
 
+}
 
+
+
+// MENSAJE INICIAL
 
 msg = await conn.sendMessage(
 m.chat,
@@ -76,7 +99,7 @@ image:{
 url:result.thumbnail || result.image
 },
 caption:
-`╭━━━〔 *🎬 PELICULA ENCONTRADO* 〕━━━⬣
+`╭━━━〔 *🎬 PELÍCULA ENCONTRADO* 〕━━━⬣
 ┃ 🎬 Nombre:
 ┃ ${result.title}
 ┃
@@ -89,45 +112,64 @@ caption:
 
 
 
-/*
-Aquí va tu método autorizado
-para obtener el enlace MP4
-*/
 
-const downloadUrl =
-result.download
+// OBTENER DESCARGA
 
-
-
-if(!downloadUrl)
-throw Error(
-'No hay enlace de descarga'
+const down = await axios.get(
+`${DOWNLOAD}?url=${encodeURIComponent(result.url)}&format=360p`
 )
 
 
 
+const media = down.data?.data
+
+
+
+if(!media?.download){
+
+throw Error(
+'La API no devolvió enlace MP4'
+)
+
+}
+
+
+
+const downloadUrl = media.download
+
+
+
+// CREAR TEMP
+
 const dir='./tmp'
 
-if(!fs.existsSync(dir))
-fs.mkdirSync(dir)
+
+if(!fs.existsSync(dir)){
+
+fs.mkdirSync(dir,{recursive:true})
+
+}
 
 
 
-filePath =
-path.join(
+filePath = path.join(
 dir,
 `video_${Date.now()}.mp4`
 )
 
 
 
-const res =
-await axios.get(
+
+// DESCARGA STREAM
+
+const res = await axios.get(
 downloadUrl,
 {
-responseType:'stream'
+responseType:'stream',
+timeout:120000
 }
 )
+
 
 
 const total =
@@ -136,8 +178,9 @@ res.headers['content-length'] || 0
 )
 
 
+
 let current = 0
-let old = -1
+let last = -1
 
 
 
@@ -145,47 +188,54 @@ res.data.on(
 'data',
 async chunk=>{
 
+
 current += chunk.length
 
 
-if(!total)
-return
+
+if(!total)return
+
 
 
 const percent =
 Math.floor(
-(current / total) * 100
+(current / total)*100
 )
 
 
-if(percent !== old &&
-percent % 5 === 0){
 
-old = percent
+if(percent !== last && percent % 5 === 0){
+
+
+last = percent
+
 
 
 await conn.sendMessage(
 m.chat,
 {
 text:
-`╭━━━〔 🎬 DESCARGANDO VIDEO 〕━━━⬣
-┃ 🎬 Nombre:
+`╭━━━〔 *🎬 DESCARGANDO PELÍCULA* 〕━━━⬣
+┃ *🎬 Nombre:*
 ┃ ${result.title}
-┃ ⏱️ Duración:
+┃ *⏱️ Duración:*
 ┃ ${result.duration}
 ┃
-┃ 📥 Descargando...
+┃ *📥 Descargando...*
 ┃ ${createBar(percent)} ${percent}%
-┃ 💾 ${(current/1024/1024).toFixed(2)}
-┃ MB / ${(total/1024/1024).toFixed(2)} MB
+┃ 💾 ${(current/1024/1024).toFixed(2)} MB / ${(total/1024/1024).toFixed(2)} MB
 ╰━━━━━━━━━━━━━━━━━━⬣`,
 edit:msg.key
 }
 )
 
+
 }
 
+
 })
+
+
 
 
 
@@ -193,6 +243,8 @@ await pipeline(
 res.data,
 fs.createWriteStream(filePath)
 )
+
+
 
 
 
@@ -212,6 +264,7 @@ text:
 edit:msg.key
 }
 )
+
 
 
 
@@ -238,19 +291,27 @@ caption:
 
 
 
+
 }catch(e){
 
-console.log(e)
+console.log(
+'[VIDEOLARGO]',
+e
+)
+
 
 m.reply(
 `❌ Error:
 ${e.message}`
 )
 
+
 }
 finally{
 
-if(filePath)
+
+if(filePath){
+
 await rm(
 filePath,
 {force:true}
@@ -258,19 +319,26 @@ filePath,
 
 }
 
+
 }
+
+
+}
+
 
 
 handler.command=[
 'pelicula',
-'peliculas',
+'peliculas'
 'pldl',
-'pl',
+ 'pl',
 ]
+
 
 handler.tags=[
 'descargas'
 ]
+
 
 handler.help=[
 'pelicula <texto>'
