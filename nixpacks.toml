@@ -1,2 +1,7 @@
 [phases.setup]
 nixPkgs = ["nodejs_22", "ffmpeg"]
+
+[phases.install]
+cmds = [
+  "npm install @hiudyy/ytdl"
+]
