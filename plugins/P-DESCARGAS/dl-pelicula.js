@@ -3,16 +3,14 @@ import fs from 'fs'
 import path from 'path'
 import { pipeline } from 'stream/promises'
 import { rm } from 'fs/promises'
+import { createRequire } from 'module'
+
+const require = createRequire(import.meta.url)
+const { ytmp4 } = require('@hiudyy/ytdl')
 
 
 const SEARCH =
 'https://api.delirius.store/search/ytsearch'
-
-
-const DOWNLOAD =
-'https://api.delirius.store/download/ytmp4'
-
-
 
 function timeToSeconds(time = '') {
 
@@ -128,29 +126,19 @@ text:
 
 // OBTENER DESCARGA
 
-const down = await axios.get(
-`${DOWNLOAD}?url=${encodeURIComponent(result.url)}&format=360p`
-)
+const data = await ytmp4(result.url)
 
+const downloadUrl =
+typeof data === 'string'
+? data
+: data?.url ||
+  data?.downloadUrl ||
+  data?.result ||
+  data?.dl
 
-
-const media = down.data?.data
-
-
-
-if(!media?.download){
-
-throw Error(
-'La API no devolvió enlace MP4'
-)
-
+if (!downloadUrl) {
+    throw new Error('No se obtuvo el enlace de descarga')
 }
-
-
-
-const downloadUrl = media.download
-
-
 
 // CREAR TEMP
 
@@ -280,9 +268,8 @@ edit:msg.key
 await conn.sendMessage(
 m.chat,
 {
-document:
-fs.readFileSync(filePath),
-
+document: fs.createReadStream(filePath)
+        
 mimetype:
 'video/mp4',
 
