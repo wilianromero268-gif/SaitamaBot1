@@ -92,7 +92,7 @@ return m.reply(
 
 // MENSAJE INICIAL
 
-msg = await conn.sendMessage(
+await conn.sendMessage(
 m.chat,
 {
 image:{
@@ -105,6 +105,19 @@ caption:
 ┃
 ┃ ⏱️ Duración:
 ┃ ${result.duration}
+╰━━━━━━━━━━━━━━━━━━⬣`
+},
+{quoted:m}
+)
+
+
+msg = await conn.sendMessage(
+m.chat,
+{
+text:
+`╭━━━〔 *📥 DESCARGANDO PELÍCULA* 〕━━━⬣
+┃ 🎬 ${result.title}
+┃ ⏳ Preparando descarga...
 ╰━━━━━━━━━━━━━━━━━━⬣`
 },
 {quoted:m}
