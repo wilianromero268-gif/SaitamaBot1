@@ -123,6 +123,8 @@ const down = await axios.get(
 
 const media = down.data?.data
 
+    console.log(media)
+
 
 
 if(!media?.download){
