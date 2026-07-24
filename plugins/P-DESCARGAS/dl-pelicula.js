@@ -329,7 +329,7 @@ filePath,
 
 handler.command=[
 'pelicula',
-'peliculas'
+'peliculas',
 'pldl',
  'pl',
 ]
